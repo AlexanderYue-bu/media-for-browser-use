@@ -4,28 +4,29 @@ import { api } from "./_generated/api";
 
 const http = httpRouter();
 
-http.route({
-  path: "/badges/header",
-  method: "GET",
-  handler: httpAction(async (ctx, req) => {
-    // Query the database for the header badge
-    const badge = await ctx.runQuery(api.badgeQueries.getBadge, { name: "header" });
-    
-    if (!badge) {
-      return new Response("Badge not found", { status: 404 });
-    }
-    
-    // Return the SVG content with proper headers
-    return new Response(badge.svgContent, {
-      status: 200,
-      headers: {
-        "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, max-age=60", // Cache for 60 seconds
-      },
-    });
-  }),
-});
+const badgeNames = ["demos", "docs", "blog", "merch", "github", "twitter", "discord", "cloud"];
 
-// Optionally allow CORS for embedding
+for (const name of badgeNames) {
+  http.route({
+    path: `/badges/${name}`,
+    method: "GET",
+    handler: httpAction(async (ctx, req) => {
+      const badge = await ctx.runQuery(api.badgeQueries.getBadge, { name });
+      
+      if (!badge) {
+        return new Response("Badge not found", { status: 404 });
+      }
+      
+      return new Response(badge.svgContent, {
+        status: 200,
+        headers: {
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "public, max-age=60",
+        },
+      });
+    }),
+  });
+}
+
 export default http;
 

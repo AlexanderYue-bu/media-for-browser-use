@@ -1,90 +1,112 @@
-# Welcome to your Convex functions directory!
+# Badge System
 
-Write your Convex functions here.
-See https://docs.convex.dev/functions for more.
+This system generates dynamic SVG badges for displaying on web pages. The system is modular, with each badge generated independently.
 
-A query function that takes two arguments looks like:
+## Architecture
 
-```ts
-// convex/myFunctions.ts
-import { query } from "./_generated/server";
-import { v } from "convex/values";
+### Badge Types
 
-export const myQueryFunction = query({
-  // Validators for arguments.
-  args: {
-    first: v.number(),
-    second: v.string(),
-  },
+The system generates 8 different badges:
 
-  // Function implementation.
-  handler: async (ctx, args) => {
-    // Read the database as many times as you need here.
-    // See https://docs.convex.dev/database/reading-data.
-    const documents = await ctx.db.query("tablename").collect();
+**Static Text Badges:**
+- `demos` - "DEMOS" text
+- `docs` - "DOCS" text
+- `blog` - "BLOG" text
+- `merch` - "MERCH" text
 
-    // Arguments passed from the client are properties of the args object.
-    console.log(args.first, args.second);
+**Dynamic Social Badges:**
+- `github` - GitHub stars count with icon
+- `twitter` - Twitter followers count with icon
+- `discord` - Discord members count with icon
 
-    // Write arbitrary JavaScript here: filter, aggregate, build derived data,
-    // remove non-public properties, or create new objects.
-    return documents;
-  },
-});
+**Static Interactive Badge:**
+- `cloud` - Animated cloud button
+
+### API Endpoints
+
+All badges are accessed via individual routes:
+
+```
+GET /badges/{name}
 ```
 
-Using this query function in a React component looks like:
+Available routes:
+- `/badges/demos` - Returns DEMOS text badge
+- `/badges/docs` - Returns DOCS text badge
+- `/badges/blog` - Returns BLOG text badge
+- `/badges/merch` - Returns MERCH text badge
+- `/badges/github` - Returns GitHub stars badge
+- `/badges/twitter` - Returns Twitter followers badge
+- `/badges/discord` - Returns Discord members badge
+- `/badges/cloud` - Returns animated cloud button
 
-```ts
-const data = useQuery(api.myFunctions.myQueryFunction, {
-  first: 10,
-  second: "hello",
-});
+Response:
+- Content-Type: `image/svg+xml`
+- Cache-Control: `public, max-age=60`
+
+### Database Schema
+
+**badges table:**
+- `name` (string) - Unique badge identifier
+- `svgContent` (string) - Complete SVG markup
+- `lastUpdated` (number) - Timestamp of last generation
+
+**socialCounts table:**
+- `social` (string) - Platform identifier (github/twitter/discord)
+- `value` (number) - Current count
+- `lastUpdated` (number) - Timestamp of last update
+
+### Badge Generation
+
+**Static badges** are generated once (on deployment or manually):
+```typescript
+// Call from Convex dashboard:
+generateStaticBadges()
 ```
 
-A mutation function looks like:
+**Dynamic badges** are regenerated automatically when their counts update:
+- `getBrowserUseStars()` → Updates GitHub count → Regenerates GitHub badge
+- `getBrowserUseFollowers()` → Updates Twitter count → Regenerates Twitter badge
+- `getBrowserUseDiscordMembers()` → Updates Discord count → Regenerates Discord badge
 
-```ts
-// convex/myFunctions.ts
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
+### SVG Generators
 
-export const myMutationFunction = mutation({
-  // Validators for arguments.
-  args: {
-    first: v.string(),
-    second: v.string(),
-  },
+Three pure functions in `svgGenerator.ts`:
 
-  // Function implementation.
-  handler: async (ctx, args) => {
-    // Insert or modify documents in the database here.
-    // Mutations can also read from the database like queries.
-    // See https://docs.convex.dev/database/writing-data.
-    const message = { body: args.first, author: args.second };
-    const id = await ctx.db.insert("messages", message);
+1. **`generateTextBadge(text: string)`**
+   - Creates simple text badge
+   - Auto-calculated width based on text
+   - Height: 48px
+   - Font: Geist Mono Medium, 14px
+   - Color: #A1A1AA
 
-    // Optionally, return a value from your mutation.
-    return await ctx.db.get(id);
-  },
-});
+2. **`generateSocialBadge(platform, count)`**
+   - Creates badge with icon + count
+   - Platform: 'github' | 'twitter' | 'discord'
+   - Auto-calculated width
+   - 28px badge height in 48px container
+
+3. **`generateCloudButton()`**
+   - Returns static 88x48px animated SVG
+   - Self-contained with animations
+
+### Usage Example
+
+```html
+<!-- Individual badges -->
+<img src="https://your-app.convex.site/badges/demos" alt="Demos">
+<img src="https://your-app.convex.site/badges/github" alt="GitHub Stars">
+<img src="https://your-app.convex.site/badges/cloud" alt="Cloud">
+
+<!-- Or compose them into a header -->
+<div class="header">
+  <img src="/badges/demos">
+  <img src="/badges/docs">
+  <img src="/badges/blog">
+  <img src="/badges/merch">
+  <img src="/badges/github">
+  <img src="/badges/twitter">
+  <img src="/badges/discord">
+  <img src="/badges/cloud">
+</div>
 ```
-
-Using this mutation function in a React component looks like:
-
-```ts
-const mutation = useMutation(api.myFunctions.myMutationFunction);
-function handleButtonPress() {
-  // fire and forget, the most common way to use mutations
-  mutation({ first: "Hello!", second: "me" });
-  // OR
-  // use the result once the mutation has completed
-  mutation({ first: "Hello!", second: "me" }).then((result) =>
-    console.log(result),
-  );
-}
-```
-
-Use the Convex CLI to push your functions to a deployment. See everything
-the Convex CLI can do by running `npx convex -h` in your project root
-directory. To learn more, launch the docs with `npx convex docs`.

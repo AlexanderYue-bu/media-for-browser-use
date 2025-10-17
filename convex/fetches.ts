@@ -29,6 +29,10 @@ export const getBrowserUseStars = internalAction({
       value: count,
     });
     
+    await ctx.scheduler.runAfter(0, internal.badgeActions.generateSocialBadgeAction, {
+      social: "github",
+    });
+    
     return null;
   },
 });
@@ -73,6 +77,10 @@ export const getBrowserUseFollowers = internalAction({
       value: count,
     });
     
+    await ctx.scheduler.runAfter(0, internal.badgeActions.generateSocialBadgeAction, {
+      social: "twitter",
+    });
+    
     return null;
   },
 });
@@ -101,6 +109,10 @@ export const getBrowserUseDiscordMembers = internalAction({
     await ctx.runMutation(internal.badgeMutations.updateSocialCount, {
       social: "discord",
       value: count,
+    });
+    
+    await ctx.scheduler.runAfter(0, internal.badgeActions.generateSocialBadgeAction, {
+      social: "discord",
     });
     
     return null;
