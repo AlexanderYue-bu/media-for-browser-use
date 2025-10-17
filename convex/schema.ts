@@ -7,5 +7,11 @@ export default defineSchema({
     svgContent: v.string(),
     lastUpdated: v.number(),
   }).index("by_name", ["name"]),
+  
+  socialCounts: defineTable({
+    social: v.string(),
+    value: v.number(),
+    lastUpdated: v.number(),
+  }).index("by_social", ["social"]),
 });
 

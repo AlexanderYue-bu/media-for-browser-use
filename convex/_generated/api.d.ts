@@ -10,7 +10,7 @@
 
 import type * as badgeActions from "../badgeActions.js";
 import type * as badgeMutations from "../badgeMutations.js";
-import type * as badges from "../badges.js";
+import type * as badgeQueries from "../badgeQueries.js";
 import type * as fetches from "../fetches.js";
 import type * as fontData from "../fontData.js";
 import type * as http from "../http.js";
@@ -34,7 +34,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   badgeActions: typeof badgeActions;
   badgeMutations: typeof badgeMutations;
-  badges: typeof badges;
+  badgeQueries: typeof badgeQueries;
   fetches: typeof fetches;
   fontData: typeof fontData;
   http: typeof http;

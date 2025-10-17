@@ -9,7 +9,7 @@ http.route({
   method: "GET",
   handler: httpAction(async (ctx, req) => {
     // Query the database for the header badge
-    const badge = await ctx.runQuery(api.badges.getBadge, { name: "header" });
+    const badge = await ctx.runQuery(api.badgeQueries.getBadge, { name: "header" });
     
     if (!badge) {
       return new Response("Badge not found", { status: 404 });

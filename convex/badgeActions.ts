@@ -9,13 +9,11 @@ export const generateAndStoreHeader = internalAction({
   args: {},
   returns: v.null(),
   handler: async (ctx, args) => {
-    // Fetch social media counts
-    const githubStars: number = await ctx.runAction(internal.fetches.getBrowserUseStars, {});
-    const twitterFollowers: number = await ctx.runAction(internal.fetches.getBrowserUseFollowers, {});
-    const discordMembers: number = await ctx.runAction(internal.fetches.getBrowserUseDiscordMembers, {});
+    // Get social media counts from database
+    const counts = await ctx.runQuery(internal.badgeQueries.getSocialCounts, {});
     
-    // Generate the SVG with the fetched counts
-    const svgContent = await generateHeaderSVG(githubStars, twitterFollowers, discordMembers);
+    // Generate the SVG with the counts
+    const svgContent = await generateHeaderSVG(counts.github, counts.twitter, counts.discord);
     
     // Store it in the database
     await ctx.runMutation(internal.badgeMutations.storeBadge, {
