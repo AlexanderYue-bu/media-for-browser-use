@@ -28,5 +28,35 @@ for (const name of badgeNames) {
   });
 }
 
+const socialPlatforms = ["github", "twitter", "discord"];
+
+for (const social of socialPlatforms) {
+  http.route({
+    path: `/social/${social}`,
+    method: "GET",
+    handler: httpAction(async (ctx, req) => {
+      const socialCount = await ctx.runQuery(api.badgeQueries.getSocialCount, { social });
+      
+      if (!socialCount) {
+        return new Response(JSON.stringify({ error: "Social count not found" }), { 
+          status: 404,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      }
+      
+      return new Response(JSON.stringify(socialCount), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=60",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    }),
+  });
+}
+
 export default http;
 

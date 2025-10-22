@@ -54,3 +54,31 @@ export const getSocialCounts = internalQuery({
   },
 });
 
+export const getSocialCount = query({
+  args: { social: v.string() },
+  returns: v.union(
+    v.object({
+      social: v.string(),
+      value: v.number(),
+      lastUpdated: v.number(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const socialCount = await ctx.db
+      .query("socialCounts")
+      .withIndex("by_social", (q) => q.eq("social", args.social))
+      .unique();
+    
+    if (!socialCount) {
+      return null;
+    }
+    
+    return {
+      social: socialCount.social,
+      value: socialCount.value,
+      lastUpdated: socialCount.lastUpdated,
+    };
+  },
+});
+
