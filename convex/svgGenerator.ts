@@ -157,12 +157,34 @@ export async function generateVerticalTextCarouselBadge(texts: string[]): Promis
     const textY = (badgeHeight / 2) + (textHeight / 2) - 2;
     
     let maxWidth = 0;
-    const textSegmentGroups: Array<Array<{ pathData: string; color: string; width: number }>> = [];
+    const textWidths: number[] = [];
+    const parsedTexts: TextSegment[][] = [];
     
     for (const text of texts) {
       const segments = parseColoredText(text);
+      parsedTexts.push(segments);
+      
+      let totalWidth = 0;
+      for (const segment of segments) {
+        const measurePath = font.getPath(segment.text, 0, textY, fontSize);
+        const bbox = measurePath.getBoundingBox();
+        const width = Math.ceil(bbox.x2) + 1;
+        totalWidth += width;
+      }
+      
+      textWidths.push(totalWidth);
+      maxWidth = Math.max(maxWidth, totalWidth);
+    }
+    
+    const textSegmentGroups: Array<Array<{ pathData: string; color: string; width: number }>> = [];
+    
+    for (let i = 0; i < parsedTexts.length; i++) {
+      const segments = parsedTexts[i];
+      const textWidth = textWidths[i];
+      const startX = (maxWidth - textWidth) / 2;
+      
       const segmentPaths: Array<{ pathData: string; color: string; width: number }> = [];
-      let xOffset = 0;
+      let xOffset = startX;
       
       for (const segment of segments) {
         const measurePath = font.getPath(segment.text, 0, textY, fontSize);
@@ -177,7 +199,6 @@ export async function generateVerticalTextCarouselBadge(texts: string[]): Promis
       }
       
       textSegmentGroups.push(segmentPaths);
-      maxWidth = Math.max(maxWidth, xOffset);
     }
     
     const pathElements = textSegmentGroups.map((segmentGroup, i) => {
