@@ -39,6 +39,37 @@ export const getBrowserUseStars = internalAction({
 });
 
 /**
+ * Fetches the latest release version for the browser-use/browser-use GitHub repository.
+ * Uses the GitHub REST API: https://api.github.com/repos/{owner}/{repo}/releases/latest
+ * No authentication required for public repositories.
+ */
+export const getBrowserUseVersion = internalAction({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const response = await fetch(
+      "https://api.github.com/repos/browser-use/browser-use/releases/latest"
+    );
+    
+    if (!response.ok) {
+      throw new Error(`GitHub API request failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    const version = data.tag_name.replace(/^v/, '');
+    
+    await ctx.runMutation(internal.badgeMutations.updateMetadata, {
+      key: "github_version",
+      value: version,
+    });
+    
+    await ctx.scheduler.runAfter(0, internal.badgeActions.generatePackageBadgeAction, {});
+    
+    return null;
+  },
+});
+
+/**
  * Fetches the member count for the browser-use Discord server.
  * Uses Discord's public invite API with the permanent invite link.
  * API Endpoint: https://discord.com/api/invites/{invite_code}?with_counts=true
@@ -66,6 +97,87 @@ export const getBrowserUseDiscordMembers = internalAction({
     
     await ctx.scheduler.runAfter(0, internal.badgeActions.generateSocialBadgeAction, {
       social: "discord",
+    });
+    
+    return null;
+  },
+});
+
+/**
+ * Fetches recent download counts (day/week/month) for the browser-use PyPI package.
+ * Uses the PyPI Stats API: https://pypistats.org/api/packages/{package}/recent
+ * No authentication required for public packages.
+ * Stores data but does not generate badges.
+ */
+export const getBrowserUsePyPiDownloadsRecent = internalAction({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const response = await fetch(
+      "https://pypistats.org/api/packages/browser-use/recent"
+    );
+    
+    if (!response.ok) {
+      throw new Error(`PyPI Stats API request failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    await ctx.runMutation(internal.badgeMutations.updateSocialCount, {
+      social: "pypi_day",
+      value: data.data.last_day,
+    });
+    
+    await ctx.runMutation(internal.badgeMutations.updateSocialCount, {
+      social: "pypi_week",
+      value: data.data.last_week,
+    });
+    
+    await ctx.runMutation(internal.badgeMutations.updateSocialCount, {
+      social: "pypi_month",
+      value: data.data.last_month,
+    });
+    
+    return null;
+  },
+});
+
+/**
+ * Fetches the total all-time download count for the browser-use PyPI package.
+ * Uses the Pepy API: https://api.pepy.tech/api/v2/projects/{project}
+ * Requires API key in X-API-Key header.
+ * Stores data under "pypi" social key and generates the pypi badge.
+ */
+export const getBrowserUsePyPiDownloadsTotal = internalAction({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    if (!process.env.PEPY_API_KEY) {
+      throw new Error("PEPY_API_KEY is not set");
+    }
+
+    const response = await fetch(
+      "https://api.pepy.tech/api/v2/projects/browser-use",
+      {
+        headers: {
+          "X-API-Key": process.env.PEPY_API_KEY,
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Pepy API request failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    await ctx.runMutation(internal.badgeMutations.updateSocialCount, {
+      social: "pypi",
+      value: data.total_downloads,
+    });
+    
+    await ctx.scheduler.runAfter(0, internal.badgeActions.generateSocialBadgeAction, {
+      social: "pypi",
     });
     
     return null;

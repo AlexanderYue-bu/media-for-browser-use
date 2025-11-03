@@ -4,7 +4,7 @@ import { api } from "./_generated/api";
 
 const http = httpRouter();
 
-const badgeNames = ["demos", "docs", "blog", "merch", "github", "twitter", "discord", "cloud"];
+const badgeNames = ["demos", "docs", "blog", "merch", "github", "twitter", "discord", "pypi", "cloud", "package"];
 
 for (const name of badgeNames) {
   http.route({
@@ -28,7 +28,7 @@ for (const name of badgeNames) {
   });
 }
 
-const socialPlatforms = ["github", "twitter", "discord"];
+const socialPlatforms = ["github", "twitter", "discord", "pypi"];
 
 for (const social of socialPlatforms) {
   http.route({

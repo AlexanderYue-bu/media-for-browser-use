@@ -13,5 +13,11 @@ export default defineSchema({
     value: v.number(),
     lastUpdated: v.number(),
   }).index("by_social", ["social"]),
+  
+  metadata: defineTable({
+    key: v.string(),
+    value: v.string(),
+    lastUpdated: v.number(),
+  }).index("by_key", ["key"]),
 });
 

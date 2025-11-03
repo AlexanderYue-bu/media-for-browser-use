@@ -62,3 +62,32 @@ export const updateSocialCount = internalMutation({
   },
 });
 
+export const updateMetadata = internalMutation({
+  args: {
+    key: v.string(),
+    value: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("metadata")
+      .withIndex("by_key", (q) => q.eq("key", args.key))
+      .unique();
+    
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        value: args.value,
+        lastUpdated: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("metadata", {
+        key: args.key,
+        value: args.value,
+        lastUpdated: Date.now(),
+      });
+    }
+    
+    return null;
+  },
+});
+

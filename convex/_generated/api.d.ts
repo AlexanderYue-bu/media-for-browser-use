@@ -8,6 +8,11 @@
  * @module
  */
 
+import type * as assets_cloudButton from "../assets/cloudButton.js";
+import type * as assets_icons_discord from "../assets/icons/discord.js";
+import type * as assets_icons_github from "../assets/icons/github.js";
+import type * as assets_icons_pypi from "../assets/icons/pypi.js";
+import type * as assets_icons_twitter from "../assets/icons/twitter.js";
 import type * as badgeActions from "../badgeActions.js";
 import type * as badgeMutations from "../badgeMutations.js";
 import type * as badgeQueries from "../badgeQueries.js";
@@ -33,6 +38,11 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "assets/cloudButton": typeof assets_cloudButton;
+  "assets/icons/discord": typeof assets_icons_discord;
+  "assets/icons/github": typeof assets_icons_github;
+  "assets/icons/pypi": typeof assets_icons_pypi;
+  "assets/icons/twitter": typeof assets_icons_twitter;
   badgeActions: typeof badgeActions;
   badgeMutations: typeof badgeMutations;
   badgeQueries: typeof badgeQueries;
