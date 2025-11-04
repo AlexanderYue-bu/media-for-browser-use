@@ -62,9 +62,10 @@ export const generatePackageBadgeAction = internalAction({
     const version = await ctx.runQuery(internal.badgeQueries.getMetadata, { key: "github_version" });
     
     const now = new Date();
-    const hours = String(now.getUTCHours()).padStart(2, '0');
-    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-    const currentTime = `${hours}:${minutes} UTC`;
+    const sfTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const hours = String(sfTime.getHours()).padStart(2, '0');
+    const minutes = String(sfTime.getMinutes()).padStart(2, '0');
+    const currentTime = `${hours}:${minutes} SF`;
     
     const formatCount = (count: number): string => {
       if (count >= 1000000) {
